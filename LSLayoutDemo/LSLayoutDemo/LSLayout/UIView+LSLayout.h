@@ -13,6 +13,8 @@
 @interface UIView (LSLayout)
 
 -(LSConstraint * (^)(NSLayoutAttribute attribute) )constraint;
+//存储所有LSConstraint属性
+@property (nonatomic, strong) NSMutableArray *constraintArr;
 
 @property (nonatomic, strong) LSConstraint *left;
 @property (nonatomic, strong) LSConstraint *right;
@@ -47,7 +49,29 @@
 -(void (^)(UIView *view,CGFloat spacing) )rightSpacingBy;
 -(void (^)(UIView *view,CGFloat spacing) )bottomSpacingBy;
 
--(NSLayoutConstraint *)constraint:(NSLayoutAttribute)attribute;
--(void)resetConstraint:(NSLayoutAttribute)attribute constant:(CGFloat)constant;
+
+
+
+//设置约束属性
+-(void)resetConstraint:(NSInteger)index constant:(CGFloat)constant;
+
+//替换约束,原来的约束还在，只不过失效，新的约束要从数组后面取
+-(void)replaceConstant:(NSInteger)index completion:(void (^)())complet;
+
+//激活约束
+-(void)activeConstant:(NSInteger)index;
+
+
+
+-(void (^)(CGFloat with))changeW;
+-(void (^)(CGFloat heigh))changeH;
+-(void (^)(CGFloat x) )changeX;
+-(void (^)(CGFloat y) )changeY;
+
+-(void (^)(CGFloat w,CGFloat h))changeSize;
+-(void (^)(CGFloat x,CGFloat y))changeOrigin;
 
 @end
+
+
+

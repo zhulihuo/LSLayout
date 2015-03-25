@@ -7,8 +7,24 @@
 //
 
 #import "UIView+LSLayout.h"
-
+#import <objc/runtime.h>
+char* const ASSOCIATION_ConstraintArr = "ASSOCIATION_ConstraintArr";
 @implementation UIView (LSLayout)
+
+#pragma mark - 通过关联扩展属性
+-(NSMutableArray *)constraintArr
+{
+    NSMutableArray* constraintArr =objc_getAssociatedObject(self,ASSOCIATION_ConstraintArr);
+    
+    return constraintArr;
+}
+
+-(void)setConstraintArr:(NSMutableArray *)constraintArr
+{
+    objc_setAssociatedObject(self,ASSOCIATION_ConstraintArr,constraintArr,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+
 
 
 -(NSLayoutConstraint *)creatLayout:(LSConstraint *)con
@@ -19,40 +35,23 @@ return right;
     
 }
 
--(void)setConstraint:(LSConstraint *)constraint
-{
-    [self.superview addConstraint:[self creatLayout:constraint]];
-
-}
 -(LSConstraint * (^)(NSLayoutAttribute attribute) )constraint
 {
+    if (self.constraintArr == nil) {
+        self.constraintArr = [[NSMutableArray alloc] init];
+    }
    return ^LSConstraint *(NSLayoutAttribute attribute){
         LSConstraint *con = [[LSConstraint alloc] init];
         con.attribute = attribute;
         con.item = self;
+        
         return con;
     };
 
 }
--(NSLayoutConstraint *)constraint:(NSLayoutAttribute)attribute
-{
-    for (NSLayoutConstraint *Constraint in self.constraints) {
-        if (Constraint.firstAttribute == attribute) {
-            return Constraint;
-        }
-    }   
-    return nil;
-}
 
--(void)resetConstraint:(NSLayoutAttribute)attribute constant:(CGFloat)constant
-{
-    for (NSLayoutConstraint *constraint in self.constraints) {
-        if (constraint.firstAttribute == attribute) {
-            constraint.constant = constant;
-            break;
-        }
-    }
-}
+
+
 
 //left
 -(LSConstraint *)left
@@ -183,7 +182,7 @@ self.centerY.equalTo(centerY);
 }
 -(void)setBaseline:(LSConstraint *)baseline
 {
- self.baseline.equalTo(baseline);
+  self.baseline.equalTo(baseline);
 }
 
 //origin
@@ -201,10 +200,12 @@ self.centerY.equalTo(centerY);
 -(void (^)(CGFloat, CGFloat))size
 {
     return ^void (CGFloat w,CGFloat h){
-    
-      self.width = self.superview.width.unusedDefault(YES).multipliedBy(0).offset(w);
-      self.height = self.superview.width.unusedDefault(YES).multipliedBy(0).offset(h);
- 
+        if (w >= 0) {
+          self.width = self.superview.width.unusedDefault(YES).multipliedBy(0).offset(w);
+        }
+        if (h >= 0) {
+            self.height = self.superview.width.unusedDefault(YES).multipliedBy(0).offset(h);
+        }
     };
 }
 
@@ -353,6 +354,85 @@ return ^void (UIView *view,NSLayoutAttribute attribute)
         
     };
 }
+
+
+-(void (^)(CGFloat))changeW
+{
+    return ^void (CGFloat offset)
+    {
+        self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, self.frame.size.width+offset, self.frame.size.height);
+    };
+}
+
+-(void (^)(CGFloat))changeH
+{
+    return ^void (CGFloat offset)
+    {
+        self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, self.frame.size.width,self.frame.size.height+offset);
+    };
+}
+-(void (^)(CGFloat))changeX
+{
+    return ^void (CGFloat offset)
+    {
+        self.frame = CGRectMake(self.frame.origin.x+offset, self.frame.origin.y, self.frame.size.width, self.frame.size.height);
+    };
+}
+
+-(void (^)(CGFloat))changeY
+{
+    return ^void (CGFloat offset)
+    {
+        self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y+offset, self.frame.size.width, self.frame.size.height);
+    };
+}
+
+//
+-(void (^)(CGFloat, CGFloat))changeOrigin
+{
+   return ^void (CGFloat x,CGFloat y)
+    {
+        self.transform = CGAffineTransformTranslate(self.transform, x, y);
+    };
+}
+-(void (^)(CGFloat, CGFloat))changeSize{
+
+    return ^void (CGFloat w,CGFloat h)
+    {              
+        CGFloat sw = (self.frame.size.width+w)/self.frame.size.width;
+        CGFloat sh = (self.frame.size.height+h)/self.frame.size.height;
+        self.transform = CGAffineTransformScale(self.transform, sw, sh);
+  
+    };
+}
+
+#pragma mark -重新设置约束参数
+-(void)resetConstraint:(NSInteger)index constant:(CGFloat)constant
+{
+    NSAssert((index < self.constraintArr.count), @"参数index越界");
+    
+    NSLayoutConstraint *con = self.constraintArr[index];
+    con.constant = constant;
+    
+}
+
+
+#pragma mark -重新设置约束
+-(void)replaceConstant:(NSInteger)index completion:(void (^)())complet
+{
+   NSAssert((index < self.constraintArr.count), @"参数index越界");
+    [NSLayoutConstraint deactivateConstraints:@[self.constraintArr[index]]];
+    if (complet) {
+        complet();
+    }
+
+}
+#pragma mark -激活约束
+-(void)activeConstant:(NSInteger)index
+{
+[NSLayoutConstraint activateConstraints:@[self.constraintArr[index]]];
+}
+
 
 
 @end

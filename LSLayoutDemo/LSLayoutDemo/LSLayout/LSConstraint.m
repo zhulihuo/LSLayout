@@ -7,7 +7,7 @@
 //
 
 #import "LSConstraint.h"
-
+#import "UIView+LSLayout.h"
 @implementation LSConstraint
 
 
@@ -23,6 +23,7 @@
        _layoutConstraint= [NSLayoutConstraint constraintWithItem:self.item attribute:self.attribute relatedBy:NSLayoutRelationEqual toItem:con.item attribute:con.attribute multiplier:con.multiplier constant:con.constant];
       
        [self.item.superview addConstraint:_layoutConstraint];
+       [self.item.constraintArr addObject:_layoutConstraint];
         return con;
     };
 }

@@ -7,29 +7,29 @@
 //
 
 #import "LSConstraint+Mutable.h"
-
+#import "UIView+LSLayout.h"
 
 @implementation LSConstraint (Mutable)
 
-//NSInteger应该用CGFloat
--(LSConstraint *(^)(NSInteger, ...))mutableoffset
+
+-(LSConstraint *(^)(NSNumber *, ...))mutableoffset
 {
-    return ^ LSConstraint *(NSInteger  off, ...)
+    return ^ LSConstraint *(NSNumber *off, ...)
     {
         int i = 1;
-        CGFloat  args;
+        id  args;
         va_list list;
         //取得第一个参数的值
         LSConstraint *con =  self.constraints[i-1];
-        con.constant = off;
+        con.constant = [off floatValue];
         
         va_start(list, off);
         do {
             
-            args = va_arg(list, NSInteger);
+            args = va_arg(list, id);
             i++;
             LSConstraint *con =  self.constraints[i-1];
-            con.constant = args ;
+            con.constant = [args floatValue] ;
             
         } while (i < self.constraints.count);
         
@@ -52,14 +52,17 @@
             
             if (self.superconstraint.constraints == nil) {
                 self.constraints = [NSMutableArray array];
-                [self.constraints addObject:self];
+                
             }else
             {    self.constraints = self.superconstraint.constraints;
-                [self.constraints addObject:self];
+               
             }
+            //将第一个约束添加进constraints
+            [self.constraints addObject:self];
         }
+           [self.constraints addObject:con];
+       
         
-        [self.constraints addObject:con];
         return self;
     };
 }
@@ -71,7 +74,7 @@
         self.constraint(attribute);
        
         NSAssert((self.constraints.count == con.constraints.count), @"两边约束个数不相等");
-        
+        NSLog(@"%lu",(unsigned long)self.constraints.count);
         //添加约束
         self.item.translatesAutoresizingMaskIntoConstraints = NO;
         con.item.translatesAutoresizingMaskIntoConstraints = NO;
@@ -80,6 +83,10 @@
           LSConstraint *con2 =  con.constraints[i];
           NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem:con1.item attribute:con1.attribute relatedBy:NSLayoutRelationEqual toItem:con2.item attribute:con2.attribute multiplier:1 constant:con2.constant];
           [con1.item.superview addConstraint:constraint];
+            if (con1.item.constraintArr) {
+                [con1.item.constraintArr addObject:constraint];
+            }
+          
         }
        
         

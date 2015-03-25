@@ -51,7 +51,16 @@
     
     btn5.top = btn2.bottom.offset(20);
     btn5.leftAlignBy(btn1);
-    btn5.width.height = btn2.width.height.mutableoffset(120,100);
+    btn5.width.height = btn2.width.height.mutableoffset(@120,@20);
+    
+    
+    
+}
+
+-(void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
     
 }
 
@@ -60,7 +69,42 @@
  btn.translatesAutoresizingMaskIntoConstraints = NO;
  btn.backgroundColor = [UIColor brownColor];
  [btn setTitle:[NSString stringWithFormat:@"btn%li",(long)index] forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(onClick:) forControlEvents:UIControlEventTouchUpInside];
  [self.view addSubview:btn];
+
+}
+
+-(void)onClick:(id)sender
+{
+    
+    
+ //在viewDidAppear后，通过设置frame的动画没有效果，可以通过设置transform实现动画效果
+    NSLog(@">>>>>>>%@",NSStringFromCGRect(btn5.frame));
+    if (sender == btn5) {
+        if (btn5.selected != YES) {
+            [UIView animateWithDuration:1 animations:^{
+                btn5.changeOrigin(0,10);
+                btn5.changeSize(0,20);
+                
+            } completion:^(BOOL finished) {
+                NSLog(@">>>>>>>%@",NSStringFromCGRect(btn5.frame));
+                btn5.selected = YES;
+               
+            }];
+        }else
+        {
+            [UIView animateWithDuration:1 animations:^{
+                 btn5.transform  = CGAffineTransformIdentity;
+                
+            } completion:^(BOOL finished) {
+                NSLog(@">>>>>>>%@",NSStringFromCGRect(btn5.frame));
+                btn5.selected = NO;
+               
+            }];
+        
+        }
+       
+    }
 
 }
 

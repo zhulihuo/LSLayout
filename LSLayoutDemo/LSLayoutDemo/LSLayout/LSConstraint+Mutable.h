@@ -24,6 +24,6 @@
 @property (nonatomic, strong) LSConstraint *baseline;
 
 
--(LSConstraint * (^)(NSInteger, ...))mutableoffset;
+-(LSConstraint * (^)(NSNumber *, ...))mutableoffset;
 
 @end
