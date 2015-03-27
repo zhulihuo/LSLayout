@@ -25,8 +25,6 @@ char* const ASSOCIATION_ConstraintArr = "ASSOCIATION_ConstraintArr";
 }
 
 
-
-
 -(NSLayoutConstraint *)creatLayout:(LSConstraint *)con
 {
     
@@ -214,12 +212,24 @@ self.centerY.equalTo(centerY);
 -(void (^)(CGFloat, CGFloat, CGFloat, CGFloat))edge
 {
     return ^void (CGFloat top ,CGFloat left,CGFloat bottom ,CGFloat right){
-        
-        self.top = self.superview.top.offset(top);
-        self.left = self.superview.left.offset(left);
-        self.bottom = self.superview.bottom.offset(-bottom);
-        self.right = self.superview.right.offset(-right);
-        
+        if(top >= 0)
+        {
+         self.top = self.superview.top.offset(top);
+        }
+        if(left >= 0)
+        {
+          self.left = self.superview.left.offset(left);
+        }
+        if(bottom >= 0)
+        {
+          self.bottom = self.superview.bottom.offset(-bottom);
+        }
+        if(right >= 0)
+        {
+          self.right = self.superview.right.offset(-right);
+        }
+       
+       
     };
 
 }
@@ -356,6 +366,40 @@ return ^void (UIView *view,NSLayoutAttribute attribute)
 }
 
 
+#pragma mark -重新设置约束参数
+-(void)resetConstraint:(NSInteger)index constant:(CGFloat)constant
+{
+    NSAssert((index < self.constraintArr.count), @"参数index越界");
+    
+    NSLayoutConstraint *con = self.constraintArr[index];
+    con.constant = constant;
+    
+}
+
+
+#pragma mark -重新设置约束
+-(void)replaceConstant:(NSInteger)index completion:(void (^)())complet
+{
+   NSAssert((index < self.constraintArr.count), @"参数index越界");
+    [NSLayoutConstraint deactivateConstraints:@[self.constraintArr[index]]];
+    if (complet) {
+        complet();
+    }
+
+}
+#pragma mark -激活约束
+-(void)activeConstant:(NSInteger)index
+{
+[NSLayoutConstraint activateConstraints:@[self.constraintArr[index]]];
+}
+
+
+
+@end
+
+@implementation UIView (change)
+
+
 -(void (^)(CGFloat))changeW
 {
     return ^void (CGFloat offset)
@@ -387,50 +431,22 @@ return ^void (UIView *view,NSLayoutAttribute attribute)
     };
 }
 
-//
+
 -(void (^)(CGFloat, CGFloat))changeOrigin
 {
-   return ^void (CGFloat x,CGFloat y)
+    return ^void (CGFloat x,CGFloat y)
     {
-        self.transform = CGAffineTransformTranslate(self.transform, x, y);
+        self.transform = CGAffineTransformTranslate( self.transform, x, y);
     };
 }
 -(void (^)(CGFloat, CGFloat))changeSize{
-
+    
     return ^void (CGFloat w,CGFloat h)
-    {              
+    {
         CGFloat sw = (self.frame.size.width+w)/self.frame.size.width;
         CGFloat sh = (self.frame.size.height+h)/self.frame.size.height;
         self.transform = CGAffineTransformScale(self.transform, sw, sh);
-  
     };
-}
-
-#pragma mark -重新设置约束参数
--(void)resetConstraint:(NSInteger)index constant:(CGFloat)constant
-{
-    NSAssert((index < self.constraintArr.count), @"参数index越界");
-    
-    NSLayoutConstraint *con = self.constraintArr[index];
-    con.constant = constant;
-    
-}
-
-
-#pragma mark -重新设置约束
--(void)replaceConstant:(NSInteger)index completion:(void (^)())complet
-{
-   NSAssert((index < self.constraintArr.count), @"参数index越界");
-    [NSLayoutConstraint deactivateConstraints:@[self.constraintArr[index]]];
-    if (complet) {
-        complet();
-    }
-
-}
-#pragma mark -激活约束
--(void)activeConstant:(NSInteger)index
-{
-[NSLayoutConstraint activateConstraints:@[self.constraintArr[index]]];
 }
 
 

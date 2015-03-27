@@ -34,7 +34,7 @@
 -(void (^)(CGFloat with ,CGFloat heigh) )size;
 -(void (^)(UIView *view))WHequalTo;
 
-//设置相对于父控件的边距
+//设置相对于父控件的边距,top，left，bottom，right小于0则不添加约束
 -(void (^)(CGFloat top ,CGFloat left,CGFloat bottom ,CGFloat right) )edge;
 
 //对齐
@@ -52,7 +52,7 @@
 
 
 
-//设置约束属性
+//设置约束常量
 -(void)resetConstraint:(NSInteger)index constant:(CGFloat)constant;
 
 //替换约束,原来的约束还在，只不过失效，新的约束要从数组后面取
@@ -62,6 +62,9 @@
 -(void)activeConstant:(NSInteger)index;
 
 
+@end
+
+@interface UIView (change)
 
 -(void (^)(CGFloat with))changeW;
 -(void (^)(CGFloat heigh))changeH;
@@ -71,7 +74,6 @@
 -(void (^)(CGFloat w,CGFloat h))changeSize;
 -(void (^)(CGFloat x,CGFloat y))changeOrigin;
 
+
 @end
-
-
 
